@@ -8,6 +8,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/brianvoe/gofakeit"
@@ -15,8 +16,6 @@ import (
 )
 
 const grpcPort = 50051
-
-var users = map[int64]*desc.GetResponse{}
 
 type server struct {
 	desc.UnimplementedUserV1Server
@@ -26,15 +25,6 @@ func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.Cre
 	log.Printf("Creating user: %s, %s", req.GetName(), req.GetEmail())
 
 	id := gofakeit.Int64()
-	date := timestamppb.New(gofakeit.Date())
-	users[id] = &desc.GetResponse{
-		Id:        id,
-		Name:      req.GetName(),
-		Email:     req.GetEmail(),
-		Role:      req.GetRole(),
-		CreatedAt: date,
-		UpdatedAt: date,
-	}
 
 	return &desc.CreateResponse{
 		Id: id,
@@ -53,6 +43,18 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 		CreatedAt: date,
 		UpdatedAt: date,
 	}, nil
+}
+
+func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*emptypb.Empty, error) {
+	log.Printf("Updating user: %d, name: %s, email: %s", req.GetId(), req.GetName(), req.GetEmail())
+
+	return &emptypb.Empty{}, nil
+}
+
+func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.Empty, error) {
+	log.Printf("Deleting user: %d", req.GetId())
+
+	return &emptypb.Empty{}, nil
 }
 
 func main() {
