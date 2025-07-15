@@ -102,6 +102,7 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*emptypb.Empty, error) {
 	builderUpdate := sq.Update("users").
 		PlaceholderFormat(sq.Dollar).
+		Set("updated_at", time.Now()).
 		Where(sq.Eq{"id": req.GetId()})
 	if req.GetName() != nil {
 		builderUpdate = builderUpdate.Set("name", req.GetName().Value)
