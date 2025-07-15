@@ -126,7 +126,21 @@ func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*emptypb.
 }
 
 func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.Empty, error) {
-	log.Printf("Deleting user: %d", req.GetId())
+	builderDelete := sq.Delete("users").
+		PlaceholderFormat(sq.Dollar).
+		Where(sq.Eq{"id": req.GetId()})
+
+	query, args, err := builderDelete.ToSql()
+	if err != nil {
+		return &emptypb.Empty{}, status.Errorf(codes.Internal, "failed to build SQL query: %v", err)
+	}
+
+	res, err := s.db.Exec(ctx, query, args...)
+	if err != nil {
+		return &emptypb.Empty{}, status.Errorf(codes.Internal, "failed to delete user: %v", err)
+	}
+
+	log.Printf("deleted %d rows", res.RowsAffected())
 
 	return &emptypb.Empty{}, nil
 }
