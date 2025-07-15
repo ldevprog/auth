@@ -34,7 +34,6 @@ type server struct {
 func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
 	pass := req.GetPassword()
 	passConfirm := req.GetPasswordConfirm()
-
 	if pass != passConfirm {
 		return nil, status.Errorf(codes.InvalidArgument, "passwords do not match")
 	}
