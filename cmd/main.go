@@ -3,13 +3,14 @@ package main
 import (
 	"context"
 	"crypto/rand"
+	"database/sql"
 	"encoding/binary"
 	"fmt"
 	"log"
 	"net"
 	"os"
+	"time"
 
-	"github.com/brianvoe/gofakeit/v7"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
@@ -61,16 +62,41 @@ func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.Cre
 }
 
 func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
-	log.Printf("User id: %d", req.GetId())
+	builderSelect := sq.Select("id", "name", "email", "role", "created_at", "updated_at").
+		From("users").
+		PlaceholderFormat(sq.Dollar).
+		Where(sq.Eq{"id": req.GetId()})
 
-	date := timestamppb.New(gofakeit.Date())
+	query, args, err := builderSelect.ToSql()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to build SQL query: %v", err)
+	}
+
+	var id int64
+	var name, email string
+	var role desc.Role
+	var createdAt time.Time
+	var updatedAt sql.NullTime
+
+	err = s.db.QueryRow(ctx, query, args...).Scan(&id, &name, &email, &role, &createdAt, &updatedAt)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to read user: %v", err)
+	}
+
+	var updatedAtProto *timestamppb.Timestamp
+	if updatedAt.Valid {
+		updatedAtProto = timestamppb.New(updatedAt.Time)
+	} else {
+		updatedAtProto = nil
+	}
+
 	return &desc.GetResponse{
-		Id:        req.GetId(),
-		Name:      gofakeit.Name(),
-		Email:     gofakeit.Email(),
-		Role:      desc.Role_ADMIN,
-		CreatedAt: date,
-		UpdatedAt: date,
+		Id:        id,
+		Name:      name,
+		Email:     email,
+		Role:      role,
+		CreatedAt: timestamppb.New(createdAt),
+		UpdatedAt: updatedAtProto,
 	}, nil
 }
 
