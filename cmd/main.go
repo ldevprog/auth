@@ -2,16 +2,24 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/binary"
 	"fmt"
 	"log"
 	"net"
+	"os"
 
-	"github.com/brianvoe/gofakeit"
+	"github.com/brianvoe/gofakeit/v7"
+	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	sq "github.com/Masterminds/squirrel"
 	desc "github.com/levon-dalakyan/auth/pkg/user_v1"
 )
 
@@ -19,15 +27,36 @@ const grpcPort = 50051
 
 type server struct {
 	desc.UnimplementedUserV1Server
+	db *pgxpool.Pool
 }
 
 func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
-	log.Printf("Creating user: %s, %s", req.GetName(), req.GetEmail())
+	pass := req.GetPassword()
+	passConfirm := req.GetPasswordConfirm()
 
-	id := gofakeit.Int64()
+	if pass != passConfirm {
+		return nil, status.Errorf(codes.InvalidArgument, "passwords do not match")
+	}
+
+	builderInsert := sq.Insert("users").
+		PlaceholderFormat(sq.Dollar).
+		Columns("id", "name", "email", "role", "password").
+		Values(randInt64Positive(), req.GetName(), req.GetEmail(), req.GetRole(), pass).
+		Suffix("RETURNING id")
+
+	query, args, err := builderInsert.ToSql()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to build SQL query: %v", err)
+	}
+
+	var userId int64
+	err = s.db.QueryRow(ctx, query, args...).Scan(&userId)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to insert user: %v", err)
+	}
 
 	return &desc.CreateResponse{
-		Id: id,
+		Id: userId,
 	}, nil
 }
 
@@ -57,7 +86,45 @@ func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.
 	return &emptypb.Empty{}, nil
 }
 
+func randInt64Positive() int64 {
+	var b [8]byte
+	rand.Read(b[:])
+	u := int64(binary.LittleEndian.Uint64(b[:]))
+	return int64(u & 0x7FFFFFFFFFFFFFFF)
+}
+
+func getDSN() string {
+	port := os.Getenv("PG_PORT")
+	dbname := os.Getenv("PG_DATABASE_NAME")
+	user := os.Getenv("PG_USER")
+	pass := os.Getenv("PG_PASSWORD")
+
+	return fmt.Sprintf(
+		"host=localhost port=%s dbname=%s user=%s password=%s sslmode=disable",
+		port,
+		dbname,
+		user,
+		pass,
+	)
+}
+
+func init() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Failed to load .env file", err)
+	}
+}
+
 func main() {
+	ctx := context.Background()
+	dbDSN := getDSN()
+
+	pool, err := pgxpool.Connect(ctx, dbDSN)
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+	defer pool.Close()
+
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -65,7 +132,7 @@ func main() {
 
 	s := grpc.NewServer()
 	reflection.Register(s)
-	desc.RegisterUserV1Server(s, &server{})
+	desc.RegisterUserV1Server(s, &server{db: pool})
 
 	log.Printf("server listening at %v", lis.Addr())
 
