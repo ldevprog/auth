@@ -85,11 +85,9 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 		return nil, status.Errorf(codes.Internal, "failed to read user: %v", err)
 	}
 
-	var updatedAtProto *timestamppb.Timestamp
+	var updatedAtTime *timestamppb.Timestamp
 	if updatedAt.Valid {
-		updatedAtProto = timestamppb.New(updatedAt.Time)
-	} else {
-		updatedAtProto = nil
+		updatedAtTime = timestamppb.New(updatedAt.Time)
 	}
 
 	return &desc.GetResponse{
@@ -98,7 +96,7 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 		Email:     email,
 		Role:      role,
 		CreatedAt: timestamppb.New(createdAt),
-		UpdatedAt: updatedAtProto,
+		UpdatedAt: updatedAtTime,
 	}, nil
 }
 
