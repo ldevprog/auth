@@ -5,14 +5,13 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"encoding/binary"
-	"fmt"
+	"flag"
 	"log"
 	"net"
-	"os"
 	"time"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
@@ -20,15 +19,19 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	sq "github.com/Masterminds/squirrel"
+	"github.com/levon-dalakyan/auth/internal/config"
 	desc "github.com/levon-dalakyan/auth/pkg/user_v1"
 )
 
-const grpcPort = 50051
+var configPath string
+
+func init() {
+	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
+}
 
 type server struct {
 	desc.UnimplementedUserV1Server
-	db *pgxpool.Pool
+	pool *pgxpool.Pool
 }
 
 func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
@@ -50,7 +53,7 @@ func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.Cre
 	}
 
 	var userId int64
-	err = s.db.QueryRow(ctx, query, args...).Scan(&userId)
+	err = s.pool.QueryRow(ctx, query, args...).Scan(&userId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to insert user: %v", err)
 	}
@@ -77,7 +80,7 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 	var createdAt time.Time
 	var updatedAt sql.NullTime
 
-	err = s.db.QueryRow(ctx, query, args...).Scan(&id, &name, &email, &role, &createdAt, &updatedAt)
+	err = s.pool.QueryRow(ctx, query, args...).Scan(&id, &name, &email, &role, &createdAt, &updatedAt)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to read user: %v", err)
 	}
@@ -116,7 +119,7 @@ func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*emptypb.
 		return &emptypb.Empty{}, status.Errorf(codes.Internal, "failed to build SQL query: %v", err)
 	}
 
-	res, err := s.db.Exec(ctx, query, args...)
+	res, err := s.pool.Exec(ctx, query, args...)
 	if err != nil {
 		return &emptypb.Empty{}, status.Errorf(codes.Internal, "failed to update user: %v", err)
 	}
@@ -136,7 +139,7 @@ func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.
 		return &emptypb.Empty{}, status.Errorf(codes.Internal, "failed to build SQL query: %v", err)
 	}
 
-	res, err := s.db.Exec(ctx, query, args...)
+	res, err := s.pool.Exec(ctx, query, args...)
 	if err != nil {
 		return &emptypb.Empty{}, status.Errorf(codes.Internal, "failed to delete user: %v", err)
 	}
@@ -153,46 +156,39 @@ func randInt64Positive() int64 {
 	return int64(u & 0x7FFFFFFFFFFFFFFF)
 }
 
-func getDSN() string {
-	port := os.Getenv("PG_PORT")
-	dbname := os.Getenv("PG_DATABASE_NAME")
-	user := os.Getenv("PG_USER")
-	pass := os.Getenv("PG_PASSWORD")
-
-	return fmt.Sprintf(
-		"host=localhost port=%s dbname=%s user=%s password=%s sslmode=disable",
-		port,
-		dbname,
-		user,
-		pass,
-	)
-}
-
-func init() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Failed to load .env file", err)
-	}
-}
-
 func main() {
+	flag.Parse()
 	ctx := context.Background()
-	dbDSN := getDSN()
 
-	pool, err := pgxpool.Connect(ctx, dbDSN)
+	err := config.Load(configPath)
+	if err != nil {
+		log.Fatalf("failed to load config: %v", err)
+	}
+
+	grpcConfig, err := config.NewGRPCConfig()
+	if err != nil {
+		log.Fatalf("failed to get grpc config: %v", err)
+	}
+
+	pgConfig, err := config.NewPGConfig()
+	if err != nil {
+		log.Fatalf("failed to get pg config: %v", err)
+	}
+
+	lis, err := net.Listen("tcp", grpcConfig.Address())
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+
+	pool, err := pgxpool.Connect(ctx, pgConfig.DSN())
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 	defer pool.Close()
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-
 	s := grpc.NewServer()
 	reflection.Register(s)
-	desc.RegisterUserV1Server(s, &server{db: pool})
+	desc.RegisterUserV1Server(s, &server{pool: pool})
 
 	log.Printf("server listening at %v", lis.Addr())
 
