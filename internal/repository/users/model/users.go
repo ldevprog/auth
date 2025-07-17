@@ -7,13 +7,6 @@ import (
 	desc "github.com/levon-dalakyan/auth/pkg/user_v1"
 )
 
-type User struct {
-	Name     string
-	Email    string
-	Role     desc.Role
-	Password string
-}
-
 type UserFullNoPass struct {
 	Id        int64
 	Name      string
@@ -21,10 +14,4 @@ type UserFullNoPass struct {
 	Role      desc.Role
 	CreatedAt time.Time
 	UpdatedAt sql.NullTime
-}
-
-type UserChangable struct {
-	Id    int64
-	Name  *string
-	Email *string
 }

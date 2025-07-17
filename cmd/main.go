@@ -12,12 +12,12 @@ import (
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/levon-dalakyan/auth/internal/config"
-	"github.com/levon-dalakyan/auth/internal/model"
-	"github.com/levon-dalakyan/auth/internal/repository"
-	"github.com/levon-dalakyan/auth/internal/repository/users"
+	"github.com/levon-dalakyan/auth/internal/converter"
+	usersRepository "github.com/levon-dalakyan/auth/internal/repository/users"
+	"github.com/levon-dalakyan/auth/internal/service"
+	usersService "github.com/levon-dalakyan/auth/internal/service/users"
 	desc "github.com/levon-dalakyan/auth/pkg/user_v1"
 )
 
@@ -29,22 +29,15 @@ func init() {
 
 type server struct {
 	desc.UnimplementedUserV1Server
-	usersRepository repository.UsersRepository
+	usersService service.UsersService
 }
 
 func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
-	pass := req.GetPassword()
-	passConfirm := req.GetPasswordConfirm()
-	if pass != passConfirm {
+	if req.GetPassword() != req.GetPasswordConfirm() {
 		return nil, status.Errorf(codes.InvalidArgument, "passwords do not match")
 	}
 
-	userId, err := s.usersRepository.Create(ctx, &model.User{
-		Name:     req.GetName(),
-		Email:    req.GetEmail(),
-		Role:     req.GetRole(),
-		Password: req.GetPassword(),
-	})
+	userId, err := s.usersService.Create(ctx, converter.ToUserFromDesc(req))
 
 	return &desc.CreateResponse{
 		Id: userId,
@@ -52,34 +45,16 @@ func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.Cre
 }
 
 func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
-	user, err := s.usersRepository.Get(ctx, req.GetId())
+	user, err := s.usersService.Get(ctx, req.GetId())
 	if err != nil {
 		return nil, err
 	}
 
-	var updatedAtTime *timestamppb.Timestamp
-	if user.UpdatedAt.Valid {
-		updatedAtTime = timestamppb.New(user.UpdatedAt.Time)
-	}
-
-	return &desc.GetResponse{
-		Id:        user.Id,
-		Name:      user.Name,
-		Email:     user.Email,
-		Role:      user.Role,
-		CreatedAt: timestamppb.New(user.CreatedAt),
-		UpdatedAt: updatedAtTime,
-	}, nil
+	return converter.ToGetResponseFromService(user), nil
 }
 
 func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*emptypb.Empty, error) {
-	updateUserData := &model.UserChangable{
-		Id:    req.GetId(),
-		Name:  &req.GetName().Value,
-		Email: &req.GetEmail().Value,
-	}
-
-	err := s.usersRepository.Update(ctx, updateUserData)
+	err := s.usersService.Update(ctx, converter.ToUserChangableFromDesc(req))
 	if err != nil {
 		return &emptypb.Empty{}, err
 	}
@@ -88,7 +63,7 @@ func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*emptypb.
 }
 
 func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.Empty, error) {
-	err := s.usersRepository.Delete(ctx, req.GetId())
+	err := s.usersService.Delete(ctx, req.GetId())
 	if err != nil {
 		return &emptypb.Empty{}, err
 	}
@@ -126,11 +101,12 @@ func main() {
 	}
 	defer pool.Close()
 
-	repo := users.NewRepository(pool)
+	usersRepo := usersRepository.NewRepository(pool)
+	usersServ := usersService.NewService(usersRepo)
 
 	s := grpc.NewServer()
 	reflection.Register(s)
-	desc.RegisterUserV1Server(s, &server{usersRepository: repo})
+	desc.RegisterUserV1Server(s, &server{usersService: usersServ})
 
 	log.Printf("server listening at %v", lis.Addr())
 
