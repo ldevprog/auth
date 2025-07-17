@@ -1,9 +1,10 @@
 package converter
 
 import (
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/levon-dalakyan/auth/internal/model"
 	desc "github.com/levon-dalakyan/auth/pkg/user_v1"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func ToGetResponseFromService(user *model.UserFullNoPass) *desc.GetResponse {

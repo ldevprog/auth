@@ -8,15 +8,11 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
-	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 
+	usersApi "github.com/levon-dalakyan/auth/internal/api/users"
 	"github.com/levon-dalakyan/auth/internal/config"
-	"github.com/levon-dalakyan/auth/internal/converter"
 	usersRepository "github.com/levon-dalakyan/auth/internal/repository/users"
-	"github.com/levon-dalakyan/auth/internal/service"
 	usersService "github.com/levon-dalakyan/auth/internal/service/users"
 	desc "github.com/levon-dalakyan/auth/pkg/user_v1"
 )
@@ -25,50 +21,6 @@ var configPath string
 
 func init() {
 	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
-}
-
-type server struct {
-	desc.UnimplementedUserV1Server
-	usersService service.UsersService
-}
-
-func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
-	if req.GetPassword() != req.GetPasswordConfirm() {
-		return nil, status.Errorf(codes.InvalidArgument, "passwords do not match")
-	}
-
-	userId, err := s.usersService.Create(ctx, converter.ToUserFromDesc(req))
-
-	return &desc.CreateResponse{
-		Id: userId,
-	}, err
-}
-
-func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
-	user, err := s.usersService.Get(ctx, req.GetId())
-	if err != nil {
-		return nil, err
-	}
-
-	return converter.ToGetResponseFromService(user), nil
-}
-
-func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*emptypb.Empty, error) {
-	err := s.usersService.Update(ctx, converter.ToUserChangableFromDesc(req))
-	if err != nil {
-		return &emptypb.Empty{}, err
-	}
-
-	return &emptypb.Empty{}, nil
-}
-
-func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.Empty, error) {
-	err := s.usersService.Delete(ctx, req.GetId())
-	if err != nil {
-		return &emptypb.Empty{}, err
-	}
-
-	return &emptypb.Empty{}, nil
 }
 
 func main() {
@@ -106,7 +58,7 @@ func main() {
 
 	s := grpc.NewServer()
 	reflection.Register(s)
-	desc.RegisterUserV1Server(s, &server{usersService: usersServ})
+	desc.RegisterUserV1Server(s, usersApi.NewImplementation(usersServ))
 
 	log.Printf("server listening at %v", lis.Addr())
 

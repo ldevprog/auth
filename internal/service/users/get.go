@@ -7,10 +7,10 @@ import (
 )
 
 func (s *serv) Get(ctx context.Context, id int64) (*model.UserFullNoPass, error) {
-	userId, err := s.usersRepository.Get(ctx, id)
+	user, err := s.usersRepository.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return userId, nil
+	return user, nil
 }
