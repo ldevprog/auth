@@ -2,15 +2,10 @@ package main
 
 import (
 	"context"
-	"crypto/rand"
-	"database/sql"
-	"encoding/binary"
 	"flag"
 	"log"
 	"net"
-	"time"
 
-	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -20,6 +15,9 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/levon-dalakyan/auth/internal/config"
+	"github.com/levon-dalakyan/auth/internal/model"
+	"github.com/levon-dalakyan/auth/internal/repository"
+	"github.com/levon-dalakyan/auth/internal/repository/users"
 	desc "github.com/levon-dalakyan/auth/pkg/user_v1"
 )
 
@@ -31,7 +29,7 @@ func init() {
 
 type server struct {
 	desc.UnimplementedUserV1Server
-	pool *pgxpool.Pool
+	usersRepository repository.UsersRepository
 }
 
 func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
@@ -41,117 +39,61 @@ func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.Cre
 		return nil, status.Errorf(codes.InvalidArgument, "passwords do not match")
 	}
 
-	builderInsert := sq.Insert("users").
-		PlaceholderFormat(sq.Dollar).
-		Columns("id", "name", "email", "role", "password").
-		Values(randInt64Positive(), req.GetName(), req.GetEmail(), req.GetRole(), pass).
-		Suffix("RETURNING id")
-
-	query, args, err := builderInsert.ToSql()
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to build SQL query: %v", err)
-	}
-
-	var userId int64
-	err = s.pool.QueryRow(ctx, query, args...).Scan(&userId)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to insert user: %v", err)
-	}
+	userId, err := s.usersRepository.Create(ctx, &model.User{
+		Name:     req.GetName(),
+		Email:    req.GetEmail(),
+		Role:     req.GetRole(),
+		Password: req.GetPassword(),
+	})
 
 	return &desc.CreateResponse{
 		Id: userId,
-	}, nil
+	}, err
 }
 
 func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
-	builderSelect := sq.Select("id", "name", "email", "role", "created_at", "updated_at").
-		From("users").
-		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{"id": req.GetId()})
-
-	query, args, err := builderSelect.ToSql()
+	user, err := s.usersRepository.Get(ctx, req.GetId())
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to build SQL query: %v", err)
-	}
-
-	var id int64
-	var name, email string
-	var role desc.Role
-	var createdAt time.Time
-	var updatedAt sql.NullTime
-
-	err = s.pool.QueryRow(ctx, query, args...).Scan(&id, &name, &email, &role, &createdAt, &updatedAt)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to read user: %v", err)
+		return nil, err
 	}
 
 	var updatedAtTime *timestamppb.Timestamp
-	if updatedAt.Valid {
-		updatedAtTime = timestamppb.New(updatedAt.Time)
+	if user.UpdatedAt.Valid {
+		updatedAtTime = timestamppb.New(user.UpdatedAt.Time)
 	}
 
 	return &desc.GetResponse{
-		Id:        id,
-		Name:      name,
-		Email:     email,
-		Role:      role,
-		CreatedAt: timestamppb.New(createdAt),
+		Id:        user.Id,
+		Name:      user.Name,
+		Email:     user.Email,
+		Role:      user.Role,
+		CreatedAt: timestamppb.New(user.CreatedAt),
 		UpdatedAt: updatedAtTime,
 	}, nil
 }
 
 func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*emptypb.Empty, error) {
-	builderUpdate := sq.Update("users").
-		PlaceholderFormat(sq.Dollar).
-		Set("updated_at", time.Now()).
-		Where(sq.Eq{"id": req.GetId()})
-	if req.GetName() != nil {
-		builderUpdate = builderUpdate.Set("name", req.GetName().Value)
-	}
-	if req.GetEmail() != nil {
-		builderUpdate = builderUpdate.Set("email", req.GetEmail().Value)
+	updateUserData := &model.UserChangable{
+		Id:    req.GetId(),
+		Name:  &req.GetName().Value,
+		Email: &req.GetEmail().Value,
 	}
 
-	query, args, err := builderUpdate.ToSql()
+	err := s.usersRepository.Update(ctx, updateUserData)
 	if err != nil {
-		return &emptypb.Empty{}, status.Errorf(codes.Internal, "failed to build SQL query: %v", err)
+		return &emptypb.Empty{}, err
 	}
-
-	res, err := s.pool.Exec(ctx, query, args...)
-	if err != nil {
-		return &emptypb.Empty{}, status.Errorf(codes.Internal, "failed to update user: %v", err)
-	}
-
-	log.Printf("updated %d rows", res.RowsAffected())
 
 	return &emptypb.Empty{}, nil
 }
 
 func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.Empty, error) {
-	builderDelete := sq.Delete("users").
-		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{"id": req.GetId()})
-
-	query, args, err := builderDelete.ToSql()
+	err := s.usersRepository.Delete(ctx, req.GetId())
 	if err != nil {
-		return &emptypb.Empty{}, status.Errorf(codes.Internal, "failed to build SQL query: %v", err)
+		return &emptypb.Empty{}, err
 	}
-
-	res, err := s.pool.Exec(ctx, query, args...)
-	if err != nil {
-		return &emptypb.Empty{}, status.Errorf(codes.Internal, "failed to delete user: %v", err)
-	}
-
-	log.Printf("deleted %d rows", res.RowsAffected())
 
 	return &emptypb.Empty{}, nil
-}
-
-func randInt64Positive() int64 {
-	var b [8]byte
-	rand.Read(b[:])
-	u := int64(binary.LittleEndian.Uint64(b[:]))
-	return int64(u & 0x7FFFFFFFFFFFFFFF)
 }
 
 func main() {
@@ -184,9 +126,11 @@ func main() {
 	}
 	defer pool.Close()
 
+	repo := users.NewRepository(pool)
+
 	s := grpc.NewServer()
 	reflection.Register(s)
-	desc.RegisterUserV1Server(s, &server{pool: pool})
+	desc.RegisterUserV1Server(s, &server{usersRepository: repo})
 
 	log.Printf("server listening at %v", lis.Addr())
 
