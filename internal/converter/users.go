@@ -32,9 +32,19 @@ func ToUserFromDesc(req *desc.CreateRequest) *model.User {
 }
 
 func ToUserChangableFromDesc(req *desc.UpdateRequest) *model.UserChangable {
+	var namePtr *string
+	if req.GetName() != nil {
+		namePtr = &req.GetName().Value
+	}
+
+	var emailPtr *string
+	if req.GetEmail() != nil {
+		emailPtr = &req.GetEmail().Value
+	}
+
 	return &model.UserChangable{
 		Id:    req.GetId(),
-		Name:  &req.GetName().Value,
-		Email: &req.GetEmail().Value,
+		Name:  namePtr,
+		Email: emailPtr,
 	}
 }
