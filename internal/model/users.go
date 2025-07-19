@@ -8,10 +8,11 @@ import (
 )
 
 type User struct {
-	Name     string
-	Email    string
-	Role     desc.Role
-	Password string
+	Name            string
+	Email           string
+	Role            desc.Role
+	Password        string
+	PasswordConfirm string
 }
 
 type UserFullNoPass struct {
