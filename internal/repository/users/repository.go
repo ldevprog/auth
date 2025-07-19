@@ -6,10 +6,10 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/levon-dalakyan/auth/internal/client/db"
 	"github.com/levon-dalakyan/auth/internal/helpers"
 	"github.com/levon-dalakyan/auth/internal/model"
 	"github.com/levon-dalakyan/auth/internal/repository"
@@ -18,10 +18,10 @@ import (
 )
 
 type repo struct {
-	db *pgxpool.Pool
+	db db.Client
 }
 
-func NewRepository(db *pgxpool.Pool) repository.UsersRepository {
+func NewRepository(db db.Client) repository.UsersRepository {
 	return &repo{db: db}
 }
 
@@ -43,8 +43,13 @@ func (r *repo) Create(ctx context.Context, user *model.User) (int64, error) {
 		return 0, status.Errorf(codes.Internal, "failed to build SQL query: %v", err)
 	}
 
+	q := db.Query{
+		Name:     "users_repository.Create",
+		QueryRaw: query,
+	}
+
 	var userId int64
-	err = r.db.QueryRow(ctx, query, args...).Scan(&userId)
+	err = r.db.DB().ScanOneContext(ctx, &userId, q, args...)
 	if err != nil {
 		return 0, status.Errorf(codes.Internal, "failed to insert user: %v", err)
 	}
@@ -63,16 +68,13 @@ func (r *repo) Get(ctx context.Context, userId int64) (*model.UserFullNoPass, er
 		return nil, status.Errorf(codes.Internal, "failed to build SQL query: %v", err)
 	}
 
-	user := modelRepo.UserFullNoPass{}
+	q := db.Query{
+		Name:     "users_repository.Get",
+		QueryRaw: query,
+	}
 
-	err = r.db.QueryRow(ctx, query, args...).Scan(
-		&user.Id,
-		&user.Name,
-		&user.Email,
-		&user.Role,
-		&user.CreatedAt,
-		&user.UpdatedAt,
-	)
+	user := modelRepo.UserFullNoPass{}
+	err = r.db.DB().ScanOneContext(ctx, &user, q, args...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to read user: %v", err)
 	}
@@ -97,7 +99,12 @@ func (r *repo) Update(ctx context.Context, user *model.UserChangable) error {
 		return status.Errorf(codes.Internal, "failed to build SQL query: %v", err)
 	}
 
-	res, err := r.db.Exec(ctx, query, args...)
+	q := db.Query{
+		Name:     "users_repository.Update",
+		QueryRaw: query,
+	}
+
+	res, err := r.db.DB().ExecContext(ctx, q, args...)
 	if err != nil {
 		return status.Errorf(codes.Internal, "failed to update user: %v", err)
 	}
@@ -117,7 +124,12 @@ func (r *repo) Delete(ctx context.Context, id int64) error {
 		return status.Errorf(codes.Internal, "failed to build SQL query: %v", err)
 	}
 
-	res, err := r.db.Exec(ctx, query, args...)
+	q := db.Query{
+		Name:     "users_repository.Delete",
+		QueryRaw: query,
+	}
+
+	res, err := r.db.DB().ExecContext(ctx, q, args...)
 	if err != nil {
 		return status.Errorf(codes.Internal, "failed to delete user: %v", err)
 	}
