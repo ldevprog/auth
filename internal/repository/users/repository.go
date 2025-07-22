@@ -6,10 +6,10 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/levon-dalakyan/platform-common/pkg/db"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/levon-dalakyan/auth/internal/client/db"
 	"github.com/levon-dalakyan/auth/internal/helpers"
 	"github.com/levon-dalakyan/auth/internal/model"
 	"github.com/levon-dalakyan/auth/internal/repository"

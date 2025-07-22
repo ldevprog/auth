@@ -5,11 +5,11 @@ import (
 	"log"
 	"net"
 
+	"github.com/levon-dalakyan/platform-common/pkg/closer"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 
-	"github.com/levon-dalakyan/auth/internal/closer"
 	"github.com/levon-dalakyan/auth/internal/config"
 	desc "github.com/levon-dalakyan/auth/pkg/user_v1"
 )

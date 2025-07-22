@@ -4,10 +4,11 @@ import (
 	"context"
 	"log"
 
+	"github.com/levon-dalakyan/platform-common/pkg/closer"
+	"github.com/levon-dalakyan/platform-common/pkg/db"
+	"github.com/levon-dalakyan/platform-common/pkg/db/pg"
+
 	usersApi "github.com/levon-dalakyan/auth/internal/api/users"
-	"github.com/levon-dalakyan/auth/internal/client/db"
-	"github.com/levon-dalakyan/auth/internal/client/db/pg"
-	"github.com/levon-dalakyan/auth/internal/closer"
 	"github.com/levon-dalakyan/auth/internal/config"
 	"github.com/levon-dalakyan/auth/internal/repository"
 	usersRepository "github.com/levon-dalakyan/auth/internal/repository/users"
