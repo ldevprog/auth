@@ -2,3 +2,4 @@
 /bin/
 auth
 /coverage.out
+vendor.protogen
