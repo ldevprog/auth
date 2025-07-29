@@ -2,7 +2,7 @@
 
 package mocks
 
-//go:generate minimock -i github.com/levon-dalakyan/auth/internal/repository.UsersRepository -o users_repository_minimock.go -n UsersRepositoryMock -p mocks
+//go:generate minimock -i github.com/ldevprog/auth/internal/repository.UsersRepository -o users_repository_minimock.go -n UsersRepositoryMock -p mocks
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	mm_time "time"
 
 	"github.com/gojuno/minimock/v3"
-	"github.com/levon-dalakyan/auth/internal/model"
+	"github.com/ldevprog/auth/internal/model"
 )
 
 // UsersRepositoryMock implements mm_repository.UsersRepository

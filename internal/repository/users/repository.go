@@ -6,15 +6,15 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/levon-dalakyan/platform-common/pkg/db"
+	"github.com/ldevprog/platform-common/pkg/db"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/levon-dalakyan/auth/internal/helpers"
-	"github.com/levon-dalakyan/auth/internal/model"
-	"github.com/levon-dalakyan/auth/internal/repository"
-	"github.com/levon-dalakyan/auth/internal/repository/users/converter"
-	modelRepo "github.com/levon-dalakyan/auth/internal/repository/users/model"
+	"github.com/ldevprog/auth/internal/helpers"
+	"github.com/ldevprog/auth/internal/model"
+	"github.com/ldevprog/auth/internal/repository"
+	"github.com/ldevprog/auth/internal/repository/users/converter"
+	modelRepo "github.com/ldevprog/auth/internal/repository/users/model"
 )
 
 type repo struct {

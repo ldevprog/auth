@@ -2,7 +2,7 @@
 
 package mocks
 
-//go:generate minimock -i github.com/levon-dalakyan/auth/internal/service.UsersService -o users_service_minimock.go -n UsersServiceMock -p mocks
+//go:generate minimock -i github.com/ldevprog/auth/internal/service.UsersService -o users_service_minimock.go -n UsersServiceMock -p mocks
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	mm_time "time"
 
 	"github.com/gojuno/minimock/v3"
-	"github.com/levon-dalakyan/auth/internal/model"
+	"github.com/ldevprog/auth/internal/model"
 )
 
 // UsersServiceMock implements mm_service.UsersService

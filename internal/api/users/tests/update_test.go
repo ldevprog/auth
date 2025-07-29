@@ -11,11 +11,11 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
-	"github.com/levon-dalakyan/auth/internal/api/users"
-	"github.com/levon-dalakyan/auth/internal/model"
-	"github.com/levon-dalakyan/auth/internal/service"
-	serviceMocks "github.com/levon-dalakyan/auth/internal/service/mocks"
-	desc "github.com/levon-dalakyan/auth/pkg/user_v1"
+	"github.com/ldevprog/auth/internal/api/users"
+	"github.com/ldevprog/auth/internal/model"
+	"github.com/ldevprog/auth/internal/service"
+	serviceMocks "github.com/ldevprog/auth/internal/service/mocks"
+	desc "github.com/ldevprog/auth/pkg/user_v1"
 )
 
 func TestUpdate(t *testing.T) {

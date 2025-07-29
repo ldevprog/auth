@@ -9,17 +9,17 @@ import (
 	"sync"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/levon-dalakyan/platform-common/pkg/closer"
+	"github.com/ldevprog/platform-common/pkg/closer"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 
-	"github.com/levon-dalakyan/auth/internal/config"
-	"github.com/levon-dalakyan/auth/internal/interceptor"
-	desc "github.com/levon-dalakyan/auth/pkg/user_v1"
-	_ "github.com/levon-dalakyan/auth/statik"
+	"github.com/ldevprog/auth/internal/config"
+	"github.com/ldevprog/auth/internal/interceptor"
+	desc "github.com/ldevprog/auth/pkg/user_v1"
+	_ "github.com/ldevprog/auth/statik"
 )
 
 type App struct {

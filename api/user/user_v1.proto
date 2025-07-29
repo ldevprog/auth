@@ -9,13 +9,13 @@ import "google/api/annotations.proto";
 import "validate/validate.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
-option go_package = "github.com/levon-dalakyan/auth/pkg/user_v1;user_v1";
+option go_package = "github.com/ldevprog/auth/pkg/user_v1;user_v1";
 
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
   info : {
     title : "User API"
     version : "1.0.0"
-    contact : {name : "Levon Dalakyan" email : "levon-dalakyan@gmail.com"};
+    contact : {name : "Levon Dalakyan" email : "ldevprog@gmail.com"};
 }
 ;
 

@@ -48,11 +48,11 @@ local-migration-down:
 
 test:
 	go clean -testcache
-	go test ./... -covermode count -coverpkg=github.com/levon-dalakyan/auth/internal/service/...,github.com/levon-dalakyan/auth/internal/api/... -count 5
+	go test ./... -covermode count -coverpkg=github.com/ldevprog/auth/internal/service/...,github.com/ldevprog/auth/internal/api/... -count 5
 
 test-coverage:
 	go clean -testcache
-	go test ./... -coverprofile=coverage.tmp.out -covermode count -coverpkg=github.com/levon-dalakyan/auth/internal/service/...,github.com/levon-dalakyan/auth/internal/api/... -count 5 
+	go test ./... -coverprofile=coverage.tmp.out -covermode count -coverpkg=github.com/ldevprog/auth/internal/service/...,github.com/ldevprog/auth/internal/api/... -count 5 
 	grep -v 'mocks\|config' coverage.tmp.out > coverage.out
 	rm coverage.tmp.out
 	go tool cover -html=coverage.out;

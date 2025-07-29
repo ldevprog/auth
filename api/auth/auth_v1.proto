@@ -1,0 +1,5 @@
+syntax = "proto3";
+
+package auth_v1;
+
+option go_package = "github.com/ldevprog/auth/pkg/auth_v1;auth_v1";

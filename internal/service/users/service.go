@@ -1,8 +1,8 @@
 package users
 
 import (
-	"github.com/levon-dalakyan/auth/internal/repository"
-	"github.com/levon-dalakyan/auth/internal/service"
+	"github.com/ldevprog/auth/internal/repository"
+	"github.com/ldevprog/auth/internal/service"
 )
 
 type serv struct {

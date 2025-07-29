@@ -1,5 +1,5 @@
 .idea
 /bin/
-auth
+/auth
 /coverage.out
 vendor.protogen

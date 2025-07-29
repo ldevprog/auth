@@ -4,16 +4,16 @@ import (
 	"context"
 	"log"
 
-	"github.com/levon-dalakyan/platform-common/pkg/closer"
-	"github.com/levon-dalakyan/platform-common/pkg/db"
-	"github.com/levon-dalakyan/platform-common/pkg/db/pg"
+	"github.com/ldevprog/platform-common/pkg/closer"
+	"github.com/ldevprog/platform-common/pkg/db"
+	"github.com/ldevprog/platform-common/pkg/db/pg"
 
-	usersApi "github.com/levon-dalakyan/auth/internal/api/users"
-	"github.com/levon-dalakyan/auth/internal/config"
-	"github.com/levon-dalakyan/auth/internal/repository"
-	usersRepository "github.com/levon-dalakyan/auth/internal/repository/users"
-	"github.com/levon-dalakyan/auth/internal/service"
-	usersService "github.com/levon-dalakyan/auth/internal/service/users"
+	usersApi "github.com/ldevprog/auth/internal/api/users"
+	"github.com/ldevprog/auth/internal/config"
+	"github.com/ldevprog/auth/internal/repository"
+	usersRepository "github.com/ldevprog/auth/internal/repository/users"
+	"github.com/ldevprog/auth/internal/service"
+	usersService "github.com/ldevprog/auth/internal/service/users"
 )
 
 type serviceProvider struct {

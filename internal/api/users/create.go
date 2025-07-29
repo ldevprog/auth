@@ -3,9 +3,9 @@ package users
 import (
 	"context"
 
-	"github.com/levon-dalakyan/auth/internal/converter"
+	"github.com/ldevprog/auth/internal/converter"
 
-	desc "github.com/levon-dalakyan/auth/pkg/user_v1"
+	desc "github.com/ldevprog/auth/pkg/user_v1"
 )
 
 func (i *Implementation) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {

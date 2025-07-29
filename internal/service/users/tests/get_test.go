@@ -10,11 +10,11 @@ import (
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/require"
 
-	"github.com/levon-dalakyan/auth/internal/model"
-	"github.com/levon-dalakyan/auth/internal/repository"
-	repoMocks "github.com/levon-dalakyan/auth/internal/repository/mocks"
-	"github.com/levon-dalakyan/auth/internal/service/users"
-	desc "github.com/levon-dalakyan/auth/pkg/user_v1"
+	"github.com/ldevprog/auth/internal/model"
+	"github.com/ldevprog/auth/internal/repository"
+	repoMocks "github.com/ldevprog/auth/internal/repository/mocks"
+	"github.com/ldevprog/auth/internal/service/users"
+	desc "github.com/ldevprog/auth/pkg/user_v1"
 )
 
 func TestGet(t *testing.T) {

@@ -1,8 +1,8 @@
 package converter
 
 import (
-	"github.com/levon-dalakyan/auth/internal/model"
-	modelRepo "github.com/levon-dalakyan/auth/internal/repository/users/model"
+	"github.com/ldevprog/auth/internal/model"
+	modelRepo "github.com/ldevprog/auth/internal/repository/users/model"
 )
 
 func ToUserFullNoPassFromRepo(user *modelRepo.UserFullNoPass) *model.UserFullNoPass {

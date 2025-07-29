@@ -9,9 +9,9 @@ import (
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/require"
 
-	"github.com/levon-dalakyan/auth/internal/repository"
-	repoMocks "github.com/levon-dalakyan/auth/internal/repository/mocks"
-	"github.com/levon-dalakyan/auth/internal/service/users"
+	"github.com/ldevprog/auth/internal/repository"
+	repoMocks "github.com/ldevprog/auth/internal/repository/mocks"
+	"github.com/ldevprog/auth/internal/service/users"
 )
 
 func TestDelete(t *testing.T) {

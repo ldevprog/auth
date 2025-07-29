@@ -5,8 +5,8 @@ import (
 
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	"github.com/levon-dalakyan/auth/internal/converter"
-	desc "github.com/levon-dalakyan/auth/pkg/user_v1"
+	"github.com/ldevprog/auth/internal/converter"
+	desc "github.com/ldevprog/auth/pkg/user_v1"
 )
 
 func (i *Implementation) Update(ctx context.Context, req *desc.UpdateRequest) (*emptypb.Empty, error) {

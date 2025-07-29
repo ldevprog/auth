@@ -1,4 +1,4 @@
-module github.com/levon-dalakyan/auth
+module github.com/ldevprog/auth
 
 go 1.23.0
 
@@ -11,7 +11,7 @@ require (
 	github.com/gojuno/minimock/v3 v3.4.5
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.1
 	github.com/joho/godotenv v1.5.1
-	github.com/levon-dalakyan/platform-common v0.1.2
+	github.com/ldevprog/platform-common v0.1.4
 	github.com/pkg/errors v0.9.1
 	github.com/rakyll/statik v0.1.7
 	github.com/rs/cors v1.11.1
@@ -45,4 +45,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/levon-dalakyan/auth/pkg/user_v1 => ./pkg/user_v1
+replace github.com/ldevprog/auth/pkg/user_v1 => ./pkg/user_v1

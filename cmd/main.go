@@ -5,7 +5,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/levon-dalakyan/auth/internal/app"
+	"github.com/ldevprog/auth/internal/app"
 )
 
 var configPath string

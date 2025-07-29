@@ -3,7 +3,7 @@ package users
 import (
 	"context"
 
-	"github.com/levon-dalakyan/auth/internal/model"
+	"github.com/ldevprog/auth/internal/model"
 )
 
 func (s *serv) Update(ctx context.Context, userData *model.UserChangable) error {

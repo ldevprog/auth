@@ -3,8 +3,8 @@ package users
 import (
 	"context"
 
-	"github.com/levon-dalakyan/auth/internal/converter"
-	desc "github.com/levon-dalakyan/auth/pkg/user_v1"
+	"github.com/ldevprog/auth/internal/converter"
+	desc "github.com/ldevprog/auth/pkg/user_v1"
 )
 
 func (i *Implementation) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {

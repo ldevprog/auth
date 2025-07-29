@@ -3,7 +3,7 @@ package users
 import (
 	"context"
 
-	"github.com/levon-dalakyan/auth/internal/model"
+	"github.com/ldevprog/auth/internal/model"
 )
 
 func (s *serv) Get(ctx context.Context, id int64) (*model.UserFullNoPass, error) {

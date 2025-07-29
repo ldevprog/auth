@@ -1,8 +1,8 @@
 package users
 
 import (
-	"github.com/levon-dalakyan/auth/internal/service"
-	desc "github.com/levon-dalakyan/auth/pkg/user_v1"
+	"github.com/ldevprog/auth/internal/service"
+	desc "github.com/ldevprog/auth/pkg/user_v1"
 )
 
 type Implementation struct {
