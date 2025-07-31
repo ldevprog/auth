@@ -1,6 +1,7 @@
 -- +goose Up
 CREATE TABLE users (
     id bigint PRIMARY KEY,
+    username text UNIQUE NOT NULL,
     name text NOT NULL,
     email text NOT NULL,
     role smallint NOT NULL DEFAULT 0,

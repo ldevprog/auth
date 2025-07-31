@@ -8,11 +8,14 @@ import (
 	"github.com/ldevprog/platform-common/pkg/db"
 	"github.com/ldevprog/platform-common/pkg/db/pg"
 
+	authApi "github.com/ldevprog/auth/internal/api/auth"
 	usersApi "github.com/ldevprog/auth/internal/api/users"
 	"github.com/ldevprog/auth/internal/config"
 	"github.com/ldevprog/auth/internal/repository"
+	authRepository "github.com/ldevprog/auth/internal/repository/auth"
 	usersRepository "github.com/ldevprog/auth/internal/repository/users"
 	"github.com/ldevprog/auth/internal/service"
+	authService "github.com/ldevprog/auth/internal/service/auth"
 	usersService "github.com/ldevprog/auth/internal/service/users"
 )
 
@@ -24,10 +27,13 @@ type serviceProvider struct {
 
 	dbClient        db.Client
 	usersRepository repository.UsersRepository
+	authRepository  repository.AuthRepository
 
 	usersService service.UsersService
+	authService  service.AuthService
 
 	usersImpl *usersApi.Implementation
+	authImpl  *authApi.Implementation
 }
 
 func newServiceProvider() *serviceProvider {
@@ -113,6 +119,14 @@ func (s *serviceProvider) UsersRepository(ctx context.Context) repository.UsersR
 	return s.usersRepository
 }
 
+func (s *serviceProvider) AuthRepository(ctx context.Context) repository.AuthRepository {
+	if s.authRepository == nil {
+		s.authRepository = authRepository.NewRepository(s.DBClient(ctx))
+	}
+
+	return s.authRepository
+}
+
 func (s *serviceProvider) UsersService(ctx context.Context) service.UsersService {
 	if s.usersService == nil {
 		s.usersService = usersService.NewService(s.UsersRepository(ctx))
@@ -121,10 +135,26 @@ func (s *serviceProvider) UsersService(ctx context.Context) service.UsersService
 	return s.usersService
 }
 
+func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
+	if s.authService == nil {
+		s.authService = authService.NewService(s.AuthRepository(ctx))
+	}
+
+	return s.authService
+}
+
 func (s *serviceProvider) UsersImpl(ctx context.Context) *usersApi.Implementation {
 	if s.usersImpl == nil {
 		s.usersImpl = usersApi.NewImplementation(s.UsersService(ctx))
 	}
 
 	return s.usersImpl
+}
+
+func (s *serviceProvider) AuthImpl(ctx context.Context) *authApi.Implementation {
+	if s.authImpl == nil {
+		s.authImpl = authApi.NewImplementation(s.AuthService(ctx))
+	}
+
+	return s.authImpl
 }

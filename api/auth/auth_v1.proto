@@ -23,7 +23,7 @@ service AuthV1 {
     };
   }
 
-  rpc GetAccessToken(GetAccessTokenRequest) returns (GetRefreshTokenResponse) {
+  rpc GetAccessToken(GetAccessTokenRequest) returns (GetAccessTokenResponse) {
     option (google.api.http) = {
       post : "/auth/v1/access"
       body : "*"

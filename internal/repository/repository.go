@@ -12,3 +12,9 @@ type UsersRepository interface {
 	Update(ctx context.Context, data *model.UserChangable) error
 	Delete(ctx context.Context, id int64) error
 }
+
+type AuthRepository interface {
+	Login(ctx context.Context, username string) (*model.CredentialsWithId, error)
+	GetRefreshToken(ctx context.Context, refreshToken string) (string, error)
+	GetAccessToken(ctx context.Context, refreshToken string) (string, error)
+}

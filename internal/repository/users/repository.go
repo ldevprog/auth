@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/ldevprog/auth/internal/helpers"
+	"github.com/ldevprog/auth/internal/utils"
 	"github.com/ldevprog/auth/internal/model"
 	"github.com/ldevprog/auth/internal/repository"
 	"github.com/ldevprog/auth/internal/repository/users/converter"
@@ -30,7 +30,7 @@ func (r *repo) Create(ctx context.Context, user *model.User) (int64, error) {
 		PlaceholderFormat(sq.Dollar).
 		Columns("id", "name", "email", "role", "password").
 		Values(
-			helpers.RandInt64Positive(),
+			utils.RandInt64Positive(),
 			user.Name,
 			user.Email,
 			user.Role,
