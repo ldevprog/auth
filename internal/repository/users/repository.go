@@ -10,11 +10,11 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/ldevprog/auth/internal/utils"
 	"github.com/ldevprog/auth/internal/model"
 	"github.com/ldevprog/auth/internal/repository"
 	"github.com/ldevprog/auth/internal/repository/users/converter"
 	modelRepo "github.com/ldevprog/auth/internal/repository/users/model"
+	"github.com/ldevprog/auth/internal/utils"
 )
 
 type repo struct {
@@ -28,10 +28,11 @@ func NewRepository(db db.Client) repository.UsersRepository {
 func (r *repo) Create(ctx context.Context, user *model.User) (int64, error) {
 	builderInsert := sq.Insert("users").
 		PlaceholderFormat(sq.Dollar).
-		Columns("id", "name", "email", "role", "password").
+		Columns("id", "username", "name", "email", "role", "password").
 		Values(
 			utils.RandInt64Positive(),
 			user.Name,
+			user.Username,
 			user.Email,
 			user.Role,
 			user.Password,
@@ -58,7 +59,7 @@ func (r *repo) Create(ctx context.Context, user *model.User) (int64, error) {
 }
 
 func (r *repo) Get(ctx context.Context, userId int64) (*model.UserFullNoPass, error) {
-	builderSelect := sq.Select("id", "name", "email", "role", "created_at", "updated_at").
+	builderSelect := sq.Select("id", "name", "username", "email", "role", "created_at", "updated_at").
 		From("users").
 		PlaceholderFormat(sq.Dollar).
 		Where(sq.Eq{"id": userId})

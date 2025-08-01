@@ -9,6 +9,7 @@ import (
 
 type User struct {
 	Name            string
+	Username        string
 	Email           string
 	Role            desc.Role
 	Password        string
@@ -18,6 +19,7 @@ type User struct {
 type UserFullNoPass struct {
 	Id        int64
 	Name      string
+	Username  string
 	Email     string
 	Role      desc.Role
 	CreatedAt time.Time

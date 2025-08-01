@@ -9,6 +9,7 @@ func ToUserFullNoPassFromRepo(user *modelRepo.UserFullNoPass) *model.UserFullNoP
 	return &model.UserFullNoPass{
 		Id:        user.Id,
 		Name:      user.Name,
+		Username:  user.Username,
 		Email:     user.Email,
 		Role:      user.Role,
 		CreatedAt: user.CreatedAt,

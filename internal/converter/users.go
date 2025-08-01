@@ -16,6 +16,7 @@ func ToGetResponseFromService(user *model.UserFullNoPass) *desc.GetResponse {
 	return &desc.GetResponse{
 		Id:        user.Id,
 		Name:      user.Name,
+		Username:  user.Username,
 		Email:     user.Email,
 		Role:      user.Role,
 		CreatedAt: timestamppb.New(user.CreatedAt),
@@ -26,6 +27,7 @@ func ToGetResponseFromService(user *model.UserFullNoPass) *desc.GetResponse {
 func ToUserFromDesc(req *desc.CreateRequest) *model.User {
 	return &model.User{
 		Name:            req.GetName(),
+		Username:        req.GetUsername(),
 		Email:           req.GetEmail(),
 		Role:            req.GetRole(),
 		Password:        req.GetPassword(),

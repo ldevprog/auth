@@ -185,6 +185,9 @@
         "name": {
           "type": "string"
         },
+        "username": {
+          "type": "string"
+        },
         "email": {
           "type": "string"
         },
@@ -216,6 +219,9 @@
           "format": "int64"
         },
         "name": {
+          "type": "string"
+        },
+        "username": {
           "type": "string"
         },
         "email": {

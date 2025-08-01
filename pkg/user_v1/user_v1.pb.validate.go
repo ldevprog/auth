@@ -68,6 +68,17 @@ func (m *CreateRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if l := utf8.RuneCountInString(m.GetUsername()); l < 3 || l > 20 {
+		err := CreateRequestValidationError{
+			field:  "Username",
+			reason: "value length must be between 3 and 20 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if err := m._validateEmail(m.GetEmail()); err != nil {
 		err = CreateRequestValidationError{
 			field:  "Email",
@@ -483,6 +494,8 @@ func (m *GetResponse) validate(all bool) error {
 	// no validation rules for Id
 
 	// no validation rules for Name
+
+	// no validation rules for Username
 
 	// no validation rules for Email
 
