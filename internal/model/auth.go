@@ -1,6 +1,10 @@
 package model
 
-import desc "github.com/ldevprog/auth/pkg/user_v1"
+import (
+	"time"
+
+	desc "github.com/ldevprog/auth/pkg/user_v1"
+)
 
 type Credentials struct {
 	Username string
@@ -17,4 +21,10 @@ type CredentialsWithId struct {
 type UserInfoForClaims struct {
 	Username string `db:"username"`
 	Role     string `db:"role"`
+}
+
+type TokenWithCredentials struct {
+	Token     string
+	UserId    int64
+	ExpiresAt time.Time
 }

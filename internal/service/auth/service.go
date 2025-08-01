@@ -5,6 +5,11 @@ import (
 	"github.com/ldevprog/auth/internal/service"
 )
 
+const (
+	refreshTokenSecretKeyEnvName     = "REFRESH_TOKEN_SECRET_KEY"
+	refreshTokenExpirationMinEnvName = "REFRESH_TOKEN_EXPIRATION_MIN"
+)
+
 type serv struct {
 	authRepository repository.AuthRepository
 }

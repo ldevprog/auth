@@ -15,6 +15,6 @@ type UsersRepository interface {
 
 type AuthRepository interface {
 	Login(ctx context.Context, username string) (*model.CredentialsWithId, error)
-	GetRefreshToken(ctx context.Context, refreshToken string) (string, error)
+	SaveRefreshToken(ctx context.Context, tokenWithCreds *model.TokenWithCredentials) error
 	GetAccessToken(ctx context.Context, refreshToken string) (string, error)
 }

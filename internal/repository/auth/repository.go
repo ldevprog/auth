@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"log"
 
 	sq "github.com/Masterminds/squirrel"
 	"google.golang.org/grpc/codes"
@@ -49,8 +50,34 @@ func (r *repo) Login(ctx context.Context, username string) (*model.CredentialsWi
 	return converter.ToCredentialsWithIdFromRepo(&credentials), nil
 }
 
-func (r *repo) GetRefreshToken(ctx context.Context, refreshToken string) (string, error) {
-	return "", nil
+func (r *repo) SaveRefreshToken(ctx context.Context, tokenWithCreds *model.TokenWithCredentials) error {
+	builderInsert := sq.Insert("refresh_tokens").
+		PlaceholderFormat(sq.Dollar).
+		Columns("token", "user_id", "expires_at").
+		Values(
+			tokenWithCreds.Token,
+			tokenWithCreds.UserId,
+			tokenWithCreds.ExpiresAt,
+		)
+
+	query, args, err := builderInsert.ToSql()
+	if err != nil {
+		return status.Errorf(codes.Internal, "failed to build SQL query: %v", err)
+	}
+
+	q := db.Query{
+		Name:     "auth_repository.SaveRefreshToken",
+		QueryRaw: query,
+	}
+
+	res, err := r.db.DB().ExecContext(ctx, q, args...)
+	if err != nil {
+		return status.Errorf(codes.Internal, "failed to save refresh token: %v", err)
+	}
+
+	log.Printf("inserted %d rows", res.RowsAffected())
+
+	return nil
 }
 
 func (r *repo) GetAccessToken(ctx context.Context, refreshToken string) (string, error) {

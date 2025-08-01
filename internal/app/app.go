@@ -18,8 +18,8 @@ import (
 
 	"github.com/ldevprog/auth/internal/config"
 	"github.com/ldevprog/auth/internal/interceptor"
-	"github.com/ldevprog/auth/pkg/auth_v1"
-	"github.com/ldevprog/auth/pkg/user_v1"
+	descAuth "github.com/ldevprog/auth/pkg/auth_v1"
+	descUser "github.com/ldevprog/auth/pkg/user_v1"
 	_ "github.com/ldevprog/auth/statik"
 )
 
@@ -123,8 +123,8 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 
 	reflection.Register(a.grpcServer)
 
-	user_v1.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UsersImpl(ctx))
-	auth_v1.RegisterAuthV1Server(a.grpcServer, a.serviceProvider.AuthImpl(ctx))
+	descUser.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UsersImpl(ctx))
+	descAuth.RegisterAuthV1Server(a.grpcServer, a.serviceProvider.AuthImpl(ctx))
 
 	return nil
 }
@@ -136,12 +136,12 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	err := user_v1.RegisterUserV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GRPCConfig().Address(), opts)
+	err := descUser.RegisterUserV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GRPCConfig().Address(), opts)
 	if err != nil {
 		return err
 	}
 
-	err = auth_v1.RegisterAuthV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GRPCConfig().Address(), opts)
+	err = descAuth.RegisterAuthV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GRPCConfig().Address(), opts)
 	if err != nil {
 		return err
 	}
