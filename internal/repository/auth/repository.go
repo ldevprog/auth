@@ -27,7 +27,7 @@ func (r *repo) Login(ctx context.Context, username string) (*model.CredentialsWi
 		From("users").
 		PlaceholderFormat(sq.Dollar).
 		Where(sq.Eq{
-			"name": username,
+			"username": username,
 		})
 
 	query, args, err := builderSelect.ToSql()

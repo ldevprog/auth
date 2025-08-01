@@ -7,7 +7,7 @@ import (
 
 func ToCredentialsFromDesc(req *desc.LoginRequest) *model.Credentials {
 	return &model.Credentials{
-		Name:     req.GetName(),
+		Username: req.GetUsername(),
 		Password: req.GetPassword(),
 	}
 }

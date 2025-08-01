@@ -18,7 +18,7 @@ const (
 )
 
 func (s *serv) Login(ctx context.Context, credentials *model.Credentials) (string, error) {
-	creds, err := s.authRepository.Login(ctx, credentials.Name)
+	creds, err := s.authRepository.Login(ctx, credentials.Username)
 	if err != nil {
 		return "", err
 	}
@@ -35,8 +35,8 @@ func (s *serv) Login(ctx context.Context, credentials *model.Credentials) (strin
 
 	refreshToken, err := utils.GenerateToken(
 		&model.UserInfoForClaims{
-			Name: creds.Name,
-			Role: creds.Role.String(),
+			Username: creds.Username,
+			Role:     creds.Role.String(),
 		},
 		[]byte(refreshTokenSecretKey),
 		time.Duration(refreshTokenExpirationMin)*time.Minute,

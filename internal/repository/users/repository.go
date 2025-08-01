@@ -28,7 +28,7 @@ func NewRepository(db db.Client) repository.UsersRepository {
 func (r *repo) Create(ctx context.Context, user *model.User) (int64, error) {
 	builderInsert := sq.Insert("users").
 		PlaceholderFormat(sq.Dollar).
-		Columns("id", "username", "name", "email", "role", "password").
+		Columns("id", "name", "username", "email", "role", "password").
 		Values(
 			utils.RandInt64Positive(),
 			user.Name,
